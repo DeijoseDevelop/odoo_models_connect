@@ -15,7 +15,7 @@ class ConnectOdoo(object):
         self.__url = url
         self.__db = db
         self.__models = xmlrpc.client.ServerProxy('{}/xmlrpc/2/object'.format(url))
-        self.__common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(self.url))
+        self.__common = xmlrpc.client.ServerProxy('{}/xmlrpc/2/common'.format(url))
 
     def authenticate(self, email: str, password: str):
         """authenticates the user in the odoo system with email and password.
@@ -33,15 +33,6 @@ class ConnectOdoo(object):
             self.password = password
             self.uid = uid
         return uid
-
-    def logout(self, email: str, password: str):
-        """Logout the user in the odoo system with email and password.
-
-        Args:
-            email (str): user email.
-            password (str): user password.
-        """
-        self.__common.logout(self.__db, email, password, {})
 
     def reconnect(self, obj: dict):
         """this function is used when you have saved the credentials of the user who is logged ind
