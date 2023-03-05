@@ -3,19 +3,22 @@ from setuptools import find_packages, setup
 
 HERE = pathlib.Path(__file__).parent
 
-VERSION = '0.0.5' #Muy importante, deberéis ir cambiando la versión de vuestra librería según incluyáis nuevas funcionalidades
-PACKAGE_NAME = 'odoo_models_connect' #Debe coincidir con el nombre de la carpeta
-AUTHOR = 'Deiver Jose Vazquez Moreno' #Modificar con vuestros datos
-AUTHOR_EMAIL = 'estudiandovazmore@gmail.com' #Modificar con vuestros datos
-URL = 'https://github.com/DeijoseDevelop' #Modificar con vuestros datos
+VERSION = '0.0.7'  # Muy importante, deberéis ir cambiando la versión de vuestra librería según incluyáis nuevas funcionalidades
+# Debe coincidir con el nombre de la carpeta
+PACKAGE_NAME = 'odoo_models_connect'
+AUTHOR = 'Deiver Jose Vazquez Moreno'  # Modificar con vuestros datos
+AUTHOR_EMAIL = 'estudiandovazmore@gmail.com'  # Modificar con vuestros datos
+# Modificar con vuestros datos
+URL = 'https://github.com/DeijoseDevelop/odoo_models_connect'
 
-LICENSE = 'MIT' #Tipo de licencia
-DESCRIPTION = 'Library to improve interaction and communication with odoo for integration with other technologies.' #Descripción corta
-LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding='utf-8') #Referencia al documento README con una descripción más elaborada
+LICENSE = 'MIT'  # Tipo de licencia
+DESCRIPTION = 'Library to improve interaction and communication with odoo for integration with other technologies.'  # Descripción corta
+# Referencia al documento README con una descripción más elaborada
+LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding='utf-8')
 LONG_DESC_TYPE = "text/markdown"
 
 
-#Paquetes necesarios para que funcione la libreía. Se instalarán a la vez si no lo tuvieras ya instalado
+# Paquetes necesarios para que funcione la libreía. Se instalarán a la vez si no lo tuvieras ya instalado
 INSTALL_REQUIRES = [
     'schematics>=2.1.0'
 ]

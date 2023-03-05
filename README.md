@@ -30,8 +30,8 @@ In the case of wanting to make queries with the authenticated user in session it
 
 ```
 session = {
-    "username": 'thebigdeijose@gmail.com',
-    "password": 'deijose1230',
+    "username": 'user_email@mail.com',
+    "password": 'user_password',
     "uid": 7,
 }
 
