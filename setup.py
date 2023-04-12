@@ -20,7 +20,7 @@ LONG_DESC_TYPE = "text/markdown"
 
 # Paquetes necesarios para que funcione la libreía. Se instalarán a la vez si no lo tuvieras ya instalado
 INSTALL_REQUIRES = [
-    'schematics>=2.1.0'
+    'python-dotenv>=1.0.0'
 ]
 
 setup(

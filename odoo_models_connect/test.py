@@ -2,11 +2,11 @@ import models
 import fields
 
 
-# class ResUsers(models.OdooModel):
-#     _name = 'res.users'
+class ResUsers(models.OdooModel):
+    _name = 'res.users'
 
-#     login = fields.StringField()
-#     department_id = fields.Many2oneField()
+    login = fields.StringField()
+    department_id = fields.Many2oneField()
 
 
 class Task(models.OdooModel):
@@ -23,20 +23,20 @@ class Task(models.OdooModel):
     lines_ids = fields.Many2manyField()
 
 
-task = Task(
-    id=93,
-    name='name testing 3',
-    proposal_id=10,
-    description='esta es una description de ejemplo',
-    project_id=4,
-    valuation='regular',
-    start_date='2025-12-29',
-    end_date='2025-12-29',
-    employee_ids=[],
-    machinery_ids=[],
-    lines_ids=[],
-)
+# task = Task(
+#     id=93,
+#     name='name testing 3',
+#     proposal_id=10,
+#     description='esta es una description de ejemplo',
+#     project_id=4,
+#     valuation='regular',
+#     start_date='2025-12-29',
+#     end_date='2025-12-29',
+#     employee_ids=[],
+#     machinery_ids=[],
+#     lines_ids=[],
+# )
 
-task.update()
+# task.update()
 
-# print(ResUsers.search_read())
+print(ResUsers.search_read())

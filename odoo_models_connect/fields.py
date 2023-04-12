@@ -1,4 +1,6 @@
-class OdooField(object):
+from abc import ABC
+
+class OdooField(ABC):
     _type = None
 
 class StringField(OdooField):
@@ -28,9 +30,9 @@ class MonetaryField(OdooField):
 class Many2oneField(OdooField):
     _type = 'many2one'
 
-
 class Many2manyField(OdooField):
     _type = 'many2many'
 
 class One2manyField(OdooField):
     _type = 'one2many'
+
