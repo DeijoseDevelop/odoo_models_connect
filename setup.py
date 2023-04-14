@@ -18,7 +18,7 @@ LONG_DESCRIPTION = (HERE / "README.md").read_text(encoding='utf-8')
 LONG_DESC_TYPE = "text/markdown"
 
 
-# Paquetes necesarios para que funcione la libreía. Se instalarán a la vez si no lo tuvieras ya instalado
+# Paquetes necesarios para que funcione la librería. Se instalarán a la vez si no lo tuvieras ya instalado
 INSTALL_REQUIRES = [
     'python-dotenv>=1.0.0'
 ]
