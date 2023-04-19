@@ -8,24 +8,23 @@ from dotenv import load_dotenv
 
 
 def load_env_vars(env_path):
-    """
-    Carga las variables de entorno desde el archivo .env en el directorio actual
-    """
+    if not os.path.exists(env_path):
+        raise FileNotFoundError(".env not found, wrong path")
     load_dotenv(env_path)
 
 
 class OdooModel(object):
-    DATABASE = None
-    USERNAME = None
-    PASSWORD = None
-    URL = None
-    UUID = None
-    MODELS = None
+    _DATABASE = None
+    _USERNAME = None
+    _PASSWORD = None
+    _URL = None
+    _UUID = None
+    _MODELS = None
 
-    COMMON = '/xmlrpc/2/common'
-    OBJECTS = '/xmlrpc/2/object'
+    _COMMON = '/xmlrpc/2/common'
+    _OBJECTS = '/xmlrpc/2/object'
 
-    FIELDS = {}
+    _FIELDS = {}
 
     _name = None
     id = None
@@ -34,24 +33,46 @@ class OdooModel(object):
         if kwargs:
             for name, value in kwargs.items():
                 setattr(self, name, value)
-                self.FIELDS[name] = value
+                self._FIELDS[name] = value
 
     def __repr__(self):
         return f"<{self.__class__.__name__} id={self.id}>"
 
+    class DoesNotExist(Exception):
+
+        def __init__(self, obj_id):
+            self.id = obj_id
+
+        def __str__(self):
+            return f'Element by id {self.id} does not exist'
+
     @classmethod
     def search_read(cls, query=[], **kwargs):
-        records = cls.MODELS.execute_kw(
-            cls.DATABASE,
-            cls.UUID,
-            cls.PASSWORD,
+        records = cls._MODELS.execute_kw(
+            cls._DATABASE,
+            cls._UUID,
+            cls._PASSWORD,
             cls._name,
             'search_read',
             [query],
-            {'fields': list(cls.FIELDS.keys())}
+            {'fields': list(cls._FIELDS.keys())}
         )
         instances = cls._instances_from_list(records)
         return instances
+
+    @classmethod
+    def search_count(cls, query=[]):
+        records = cls.search_read(query=query)
+        return len(records)
+
+    @classmethod
+    def search_by_id(cls, obj_id=None):
+        if obj_id is None:
+            raise ValueError("id is required")
+        record = cls.search_read(query=[["id", '=', obj_id]])
+        if len(record) == 0:
+            raise cls.DoesNotExist(obj_id)
+        return record[0]
 
     @classmethod
     def _instances_from_list(cls, records):
@@ -62,59 +83,58 @@ class OdooModel(object):
         return cls(**obj)
 
     def create(self):
-        return self.MODELS.execute_kw(self.DATABASE, self.UUID, self.PASSWORD, self._name, 'create', [self.FIELDS])
+        return self._MODELS.execute_kw(self._DATABASE, self._UUID, self._PASSWORD, self._name, 'create', [self._FIELDS])
 
     def update(self):
-        print(self.FIELDS)
-        return self.MODELS.execute_kw(self.DATABASE, self.UUID, self.PASSWORD, self._name, 'write', [[self.id], self.FIELDS])
+        return self._MODELS.execute_kw(self._DATABASE, self._UUID, self._PASSWORD, self._name, 'write', [[self.id], self._FIELDS])
 
     def delete(self):
-        return self.MODELS.execute_kw(self.DATABASE, self.UUID, self.PASSWORD, self._name, 'unlink', [[self.id]])
+        return self._MODELS.execute_kw(self._DATABASE, self._UUID, self._PASSWORD, self._name, 'unlink', [[self.id]])
 
     def __init_subclass__(cls):
         cls._set_config_envs()
         cls._fill_fields()
-        cls.set_attributes_initialized_none()
+        cls._set_attributes_initialized_none()
         super().__init_subclass__()
 
     @classmethod
-    def set_attributes_initialized_none(cls):
-        cls.set_models_attribute()
-        cls.set_uuid_attribute()
+    def _set_attributes_initialized_none(cls):
+        cls._set_models_attribute()
+        cls._set_uuid_attribute()
 
     @classmethod
     def _set_config_envs(cls):
-        cls.DATABASE = os.getenv('DATABASE')
-        cls.USERNAME = os.getenv('USERNAME')
-        cls.PASSWORD = os.getenv('PASSWORD')
-        cls.URL = os.getenv('URL')
+        cls._DATABASE = os.getenv('DATABASE')
+        cls._USERNAME = os.getenv('USERNAME')
+        cls._PASSWORD = os.getenv('PASSWORD')
+        cls._URL = os.getenv('URL')
 
     @classmethod
-    def set_uuid_attribute(cls):
-        common = xmlrpc.client.ServerProxy('{}{}'.format(cls.URL, cls.COMMON))
-        cls.UUID = common.authenticate(
-            cls.DATABASE, cls.USERNAME, cls.PASSWORD, {})
+    def _set_uuid_attribute(cls):
+        common = xmlrpc.client.ServerProxy('{}{}'.format(cls._URL, cls._COMMON))
+        cls._UUID = common.authenticate(
+            cls._DATABASE, cls._USERNAME, cls._PASSWORD, {})
 
     @classmethod
-    def set_models_attribute(cls):
-        cls.MODELS = xmlrpc.client.ServerProxy(
-            '{}{}'.format(cls.URL, cls.OBJECTS))
+    def _set_models_attribute(cls):
+        cls._MODELS = xmlrpc.client.ServerProxy(
+            '{}{}'.format(cls._URL, cls._OBJECTS))
 
     @classmethod
     def _fill_fields(cls):
-        cls.FIELDS = {}
-        cls.iterate_dir_class()
+        cls._FIELDS = {}
+        cls._iterate_dir_class()
 
     @classmethod
-    def iterate_dir_class(cls):
+    def _iterate_dir_class(cls):
         for attr_name in dir(cls):
             attr = cls._is_not_abstract_method_attribute(attr_name)
-            cls.add_field_if_is_odoo_field(attr, attr_name)
+            cls._add_field_if_is_odoo_field(attr, attr_name)
 
     @classmethod
-    def add_field_if_is_odoo_field(cls, attr, attr_name):
+    def _add_field_if_is_odoo_field(cls, attr, attr_name):
         if isinstance(attr, OdooField):
-            cls.FIELDS[attr_name] = attr._type
+            cls._FIELDS[attr_name] = attr._type
 
     @classmethod
     def _is_not_abstract_method_attribute(cls, attr_name):

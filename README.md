@@ -12,6 +12,135 @@ $ pip install odoo-models-connect
 
 ## Example
 
+Initialize the required environment variables
+
+1. Create an .env file
+2. places the environment variables inside the file with these names:
+
+   - DATABASE
+   - USERNAME
+   - PASSWORD
+   - URL
+
+For example .env:
+
+    DATABASE='local_DB'
+    USERNAME='admin@email.com'
+    PASSWORD='123456'
+    URL='http://localhost:8069'
+
+3. import load_env_vars:
+
+    ```
+   from odoo_models_connect import load_env_vars
+    ```
+
+4. load environment variables:
+
+   ```
+   load_env_vars('path/to/environment')
+   ```
+
+   ##### NOTE: must end in .env
+
+You can create a high-level interface by declaring models by extending models.OdooModel as follows:
+
+```
+from odoo_models_connect import models, fields, load_env_vars
+
+
+load_env_vars(env_path='path/to/.env')
+
+
+class ResUsers(models.OdooModel):
+    _name = 'res.users'
+
+    name = fields.StringField()
+    login = fields.StringField()
+    password = fields.StringField()
+```
+
+##### NOTE: it is necessary to load the environment variables before doing the inheritance of OdooModel
+
+count of number of records:
+
+```
+>>> ResUsers.search_count()
+4
+```
+
+search and read record by id:
+
+```
+>>> ResUsers.search_by_id(2)
+<ResUsers id=2>
+```
+
+search and read records:
+
+```
+>>> ResUsers.search_read()
+[<ResUsers id=2>, <ResUsers id=6>, <ResUsers id=7>, <ResUsers id=8>]
+```
+
+filter records:
+
+```
+>>> ResUsers.search_read(query=[["name", 'ilike', "John"]])
+[<ResUsers id=2>, <ResUsers id=6>]
+```
+
+create a record:
+
+```
+user = ResUsers(
+    name='John',
+    login='John@mail.com',
+    password='john123',
+)
+
+user.create()
+```
+
+update a record:
+
+```
+user = ResUsers(
+    id=8,
+    name='John2',
+    login='John2@mail.com',
+    password='john1234',
+)
+
+user.update()
+```
+
+delete a record:
+
+```
+user = ResUsers(id=10)
+
+user.delete()
+```
+
+### Allowed data types:
+
+- StringField
+- BooleanField
+- BinaryField
+- DateField
+- DateTimeField
+- IntegerField
+- FloatField
+- MonetaryField
+- Many2oneField
+- Many2manyField
+- One2manyField
+
+##
+
+## Other Features
+
 Initialize the odoo connection:
 
 ```
@@ -38,9 +167,7 @@ session = {
 odoo.reconnect(session)
 ```
 
-
-## Making queries
-
+### Making queries
 
 To make a simple search of all the elements of a model is used:
 
@@ -65,7 +192,8 @@ You can also bring only the fields that are needed:
 ```
 users = odoo.read('res.users', object_ids=[8, 25], fields=['name', 'login'])
 ```
-### NOTE: ids must be of type integer
+
+#### NOTE: ids must be of type integer
 
 You can fetch the id of all the elements of a model stored in a database:
 
@@ -113,4 +241,3 @@ user_id = 9
 
 odoo.delete('res.users', user_id)
 ```
-
