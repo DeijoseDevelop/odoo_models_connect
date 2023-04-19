@@ -28,7 +28,6 @@ class MonetaryField(OdooField):
 class Many2oneField(OdooField):
     _type = 'many2one'
 
-
 class Many2manyField(OdooField):
     _type = 'many2many'
 
