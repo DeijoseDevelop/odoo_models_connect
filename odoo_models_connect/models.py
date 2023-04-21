@@ -34,6 +34,7 @@ class OdooModel(object):
     id = None
 
     def __init__(self, **kwargs):
+        self._FIELDS = {}
         if kwargs:
             for name, value in kwargs.items():
                 setattr(self, name, value)
