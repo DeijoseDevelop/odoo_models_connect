@@ -5,7 +5,11 @@ from dotenv import dotenv_values
 from abc import ABC, abstractmethod
 import os
 from dotenv import load_dotenv
-
+from .exceptions import (
+    ObjectDoesNotExist,
+    IDRequiredException,
+    EnvVariablesException,
+)
 
 def load_env_vars(env_path):
     if not os.path.exists(env_path):
@@ -38,14 +42,6 @@ class OdooModel(object):
     def __repr__(self):
         return f"<{self.__class__.__name__} id={self.id}>"
 
-    class DoesNotExist(Exception):
-
-        def __init__(self, obj_id):
-            self.id = obj_id
-
-        def __str__(self):
-            return f'Element by id {self.id} does not exist'
-
     @classmethod
     def search_read(cls, query=[], **kwargs):
         records = cls._MODELS.execute_kw(
@@ -67,12 +63,20 @@ class OdooModel(object):
 
     @classmethod
     def search_by_id(cls, obj_id=None):
-        if obj_id is None:
-            raise ValueError("id is required")
+        cls._validate_id_required(obj_id)
         record = cls.search_read(query=[["id", '=', obj_id]])
-        if len(record) == 0:
-            raise cls.DoesNotExist(obj_id)
+        cls._validate_object_not_exist(record, obj_id)
         return record[0]
+
+    @classmethod
+    def _validate_id_required(cls, obj_id):
+        if obj_id is None:
+            raise IDRequiredException()
+
+    @classmethod
+    def _validate_object_not_exist(cls, record, obj_id):
+        if len(record) == 0:
+            raise ObjectDoesNotExist(obj_id)
 
     @classmethod
     def _instances_from_list(cls, records):
@@ -92,10 +96,13 @@ class OdooModel(object):
         return self._MODELS.execute_kw(self._DATABASE, self._UUID, self._PASSWORD, self._name, 'unlink', [[self.id]])
 
     def __init_subclass__(cls):
-        cls._set_config_envs()
-        cls._fill_fields()
-        cls._set_attributes_initialized_none()
-        super().__init_subclass__()
+        try:
+            cls._set_config_envs()
+            cls._fill_fields()
+            cls._set_attributes_initialized_none()
+            super().__init_subclass__()
+        except OSError:
+            raise EnvVariablesException()
 
     @classmethod
     def _set_attributes_initialized_none(cls):
@@ -111,7 +118,8 @@ class OdooModel(object):
 
     @classmethod
     def _set_uuid_attribute(cls):
-        common = xmlrpc.client.ServerProxy('{}{}'.format(cls._URL, cls._COMMON))
+        common = xmlrpc.client.ServerProxy(
+            '{}{}'.format(cls._URL, cls._COMMON))
         cls._UUID = common.authenticate(
             cls._DATABASE, cls._USERNAME, cls._PASSWORD, {})
 
