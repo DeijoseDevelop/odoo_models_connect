@@ -1,21 +1,22 @@
 import xmlrpc.client
-from xmlrpc.client import Error
 from .fields import OdooField
 from dotenv import dotenv_values
 from abc import ABC, abstractmethod
 import os
 from dotenv import load_dotenv
+from .decorators import access_denied
 from .exceptions import (
+    GenericalException,
     ObjectDoesNotExist,
     IDRequiredException,
     EnvVariablesException,
+    AccessDeniedException,
 )
 
 def load_env_vars(env_path):
     if not os.path.exists(env_path):
         raise FileNotFoundError(".env not found, wrong path")
     load_dotenv(env_path)
-
 
 class OdooModel(object):
     _DATABASE = None
@@ -44,20 +45,6 @@ class OdooModel(object):
         return f"<{self.__class__.__name__} id={self.id}>"
 
     @classmethod
-    def search_read(cls, query=[], **kwargs):
-        records = cls._MODELS.execute_kw(
-            cls._DATABASE,
-            cls._UUID,
-            cls._PASSWORD,
-            cls._name,
-            'search_read',
-            [query],
-            {'fields': list(cls._FIELDS.keys())}
-        )
-        instances = cls._instances_from_list(records)
-        return instances
-
-    @classmethod
     def search_count(cls, query=[]):
         records = cls.search_read(query=query)
         return len(records)
@@ -80,6 +67,21 @@ class OdooModel(object):
             raise ObjectDoesNotExist(obj_id)
 
     @classmethod
+    @access_denied
+    def search_read(cls, query=[], **kwargs):
+        records = cls._MODELS.execute_kw(
+            cls._DATABASE,
+            cls._UUID,
+            cls._PASSWORD,
+            cls._name,
+            'search_read',
+            [query],
+            {'fields': list(cls._FIELDS.keys())}
+        )
+        instances = cls._instances_from_list(records)
+        return instances
+
+    @classmethod
     def _instances_from_list(cls, records):
         return [cls._create_instance_from_dict(record) for record in records]
 
@@ -87,12 +89,15 @@ class OdooModel(object):
     def _create_instance_from_dict(cls, obj):
         return cls(**obj)
 
+    @access_denied
     def create(self):
         return self._MODELS.execute_kw(self._DATABASE, self._UUID, self._PASSWORD, self._name, 'create', [self._FIELDS])
 
+    @access_denied
     def update(self):
         return self._MODELS.execute_kw(self._DATABASE, self._UUID, self._PASSWORD, self._name, 'write', [[self.id], self._FIELDS])
 
+    @access_denied
     def delete(self):
         return self._MODELS.execute_kw(self._DATABASE, self._UUID, self._PASSWORD, self._name, 'unlink', [[self.id]])
 
