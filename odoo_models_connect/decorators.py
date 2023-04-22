@@ -13,5 +13,6 @@ def access_denied(method):
             if error.faultCode == 3:
                 raise AccessDeniedException()
             else:
-                raise GenericalException("Error Fault capturado: Código de error: %d. Mensaje de error: %s" % (error.faultCode, error.faultString))
+                raise GenericalException("Error Fault captured: Error code: %d. Error message: %s" % (
+                    error.faultCode, error.faultString))
     return wrapper
